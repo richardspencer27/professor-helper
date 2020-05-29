@@ -8,7 +8,6 @@ const Error = (props) => {
 };
 
 const Grader = () => {
-  let a = 1;
   const [issues, setIssues] = useState("");
   const [errors, setErrors] = useState([]);
   const [errorsCount, setErrorsCount] = useState(0);
