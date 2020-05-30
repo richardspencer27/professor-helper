@@ -30,6 +30,7 @@ const Grader = () => {
   const [errors, setErrors] = useState([]);
   const [errorsCount, setErrorsCount] = useState(0);
   const [currentAssignmentNumber, setCurrentAssignmentNumber] = useState(1);
+  const [points, setPoints] = useState(50);
 
   useEffect(() => {
     fetch("http://localhost:7071/api/products")
@@ -41,9 +42,11 @@ const Grader = () => {
   const updateText = (event) => {
     let text = event.target.value;
     setIssues(text);
+
     let separatedText = text.split("\n");
 
     separatedText = separatedText.filter((text) => text !== "");
+
     let errors = separatedText.map((error) => {
       let assignmentNumber = 0;
       if (text.includes("]")) {
@@ -71,6 +74,35 @@ const Grader = () => {
     setErrorsCount(errors.filter((e) => e.type === "error").length);
 
     console.log(errors);
+  };
+
+  const handleAssignmentWeekChange = (e) => {
+    debugger;
+    const updatedAssignmentWeek = e.target.value;
+    setCurrentAssignmentNumber(updatedAssignmentWeek);
+
+    if (errors.length === 0) {
+      return;
+    }
+
+    const updatedErrors = errors.map((error) => {
+      if (error.type === "fileName") {
+        return error;
+      }
+
+      let pointsToTakeAway = 0;
+      if (updatedAssignmentWeek === error.assignmentNumber) {
+        pointsToTakeAway = 1;
+      }
+
+      if (updatedAssignmentWeek > error.assignmentNumber) {
+        pointsToTakeAway = updatedAssignmentWeek - error.assignmentNumber + 1;
+      }
+
+      return { ...error, pointsToTakeAway };
+    });
+
+    setErrors(updatedErrors);
   };
 
   return (
@@ -135,7 +167,7 @@ const Grader = () => {
       <div style={{ marginTop: 10, marginBottom: 10 }}>
         <select
           value={currentAssignmentNumber}
-          onChange={(e) => setCurrentAssignmentNumber(e.target.value)}
+          onChange={handleAssignmentWeekChange}
         >
           <option value="1">1</option>
           <option value="2">2</option>
