@@ -59,13 +59,6 @@ const Grader = () => {
         pointsToTakeAway = currentAssignmentNumber - assignmentNumber + 1;
       }
 
-      switch (assignmentNumber) {
-        case 0:
-          pointsToTakeAway = 0;
-          break;
-        case 1:
-      }
-
       return {
         text: error,
         type: error.includes(".html") ? "fileName" : "error",
