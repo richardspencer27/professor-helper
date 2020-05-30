@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Grader.css";
 
-const FileName = (props) => <h2>{props.name}</h2>;
-const Error = (props) => {
-  const { text, assignmentNumber, pointsToTakeAway } = props;
-  return (
-    <div className="errorContainer">
-      {text}
-      <div>assignmentNumber:{assignmentNumber}</div>
-      <div>pointsToTakeAway:{pointsToTakeAway}</div>
-    </div>
-  );
-};
-
 const testRawIssue = `index.html
 
 <footer> should have a properly structured email (mailto) link [SS2]
@@ -25,6 +13,36 @@ the footer links (EXCEPT for the mailto one) should have attribute of target="_b
 <footer> should NOT have any <p> elements...it is not a paragraph [SS2]
 the school links should have attribute of target="_blank" [SS2]
 all school links should go around the h3 (i.e., <a href...><h3>...</h3></a>) [SS2]`;
+
+const FileName = (props) => <h2 style={{ marginTop: 0 }}>{props.name}</h2>;
+const Error = (props) => {
+  const { text, pointsToTakeAway } = props;
+  return (
+    <div
+      style={{ display: "flex", flexDirection: "row" }}
+      className="errorContainer"
+    >
+      <div style={{ display: "flex", flex: 21, flexDirection: "column" }}>
+        <div style={{ fontSize: 14 }}>{text}</div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          height: 40,
+          width: 40,
+          borderRadius: 20,
+          backgroundColor: "#d2d2d2",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        - {pointsToTakeAway}
+      </div>
+    </div>
+  );
+};
+
 const Grader = () => {
   const [issues, setIssues] = useState(testRawIssue);
   const [errors, setErrors] = useState([]);
@@ -72,12 +90,23 @@ const Grader = () => {
 
     setErrors(errors);
     setErrorsCount(errors.filter((e) => e.type === "error").length);
+    calculatePoints(errors);
 
     console.log(errors);
   };
 
+  const calculatePoints = (errors) => {
+    let points = 50;
+    errors.forEach((error) => {
+      if (error.type === "error") {
+        points = points - error.pointsToTakeAway;
+      }
+    });
+
+    setPoints(points);
+  };
+
   const handleAssignmentWeekChange = (e) => {
-    debugger;
     const updatedAssignmentWeek = e.target.value;
     setCurrentAssignmentNumber(updatedAssignmentWeek);
 
@@ -103,6 +132,7 @@ const Grader = () => {
     });
 
     setErrors(updatedErrors);
+    calculatePoints(updatedErrors);
   };
 
   return (
@@ -142,10 +172,7 @@ const Grader = () => {
           }}
         >
           <div>Points</div>
-          <span style={{ fontSize: 18, fontWeight: "bold" }}>
-            {" "}
-            {errorsCount}
-          </span>
+          <span style={{ fontSize: 18, fontWeight: "bold" }}> {points}</span>
         </div>
         <div
           style={{
@@ -158,7 +185,7 @@ const Grader = () => {
           <div>Grade</div>
           <span style={{ fontSize: 18, fontWeight: "bold" }}>
             {" "}
-            {errorsCount}
+            {points === 50 ? "100" : (points / 50) * 100.0}%
           </span>
         </div>
       </div>
@@ -184,7 +211,7 @@ const Grader = () => {
 
       <div style={{ display: "flex", flexDirection: "row" }}>
         {/* Raw Issues */}
-        <div className="rawIssues">
+        <div style={{ marginRight: 20 }} className="rawIssues">
           <textarea
             value={issues}
             onChange={updateText}
@@ -203,7 +230,6 @@ const Grader = () => {
                 <Error
                   key={index}
                   text={error.text}
-                  assignmentNumber={error.assignmentNumber}
                   pointsToTakeAway={error.pointsToTakeAway}
                 />
               );
