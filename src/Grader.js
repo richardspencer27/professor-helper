@@ -16,28 +16,48 @@ all school links should go around the h3 (i.e., <a href...><h3>...</h3></a>) [SS
 
 const FileName = (props) => <h2 style={{ marginTop: 0 }}>{props.name}</h2>;
 const Error = (props) => {
-  const { text, pointsToTakeAway } = props;
+  const { text, pointsToTakeAway, index, deleteError } = props;
   return (
     <div
-      style={{ display: "flex", flexDirection: "row" }}
       className="errorContainer"
+      style={{ display: "flex", flexDirection: "column" }}
     >
-      <div style={{ display: "flex", flex: 21, flexDirection: "column" }}>
-        <div style={{ fontSize: 14 }}>{text}</div>
+      <div
+        style={{ display: "flex", flexDirection: "row", alignItems: "center" }}
+      >
+        <div style={{ display: "flex", flex: 21, flexDirection: "column" }}>
+          <div style={{ fontSize: 14 }}>{text}</div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            height: 40,
+            width: 40,
+            borderRadius: 20,
+            backgroundColor: "#d2d2d2",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          - {pointsToTakeAway}
+        </div>
       </div>
-
       <div
         style={{
           display: "flex",
-          height: 40,
-          width: 40,
-          borderRadius: 20,
-          backgroundColor: "#d2d2d2",
-          justifyContent: "center",
-          alignItems: "center",
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          marginTop: 10,
         }}
       >
-        - {pointsToTakeAway}
+        <div style={{ marginRight: 10 }}>Edit</div>
+        <a
+          href="#"
+          onClick={(e) => deleteError(e, index)}
+          style={{ color: "red", textDecoration: "none" }}
+        >
+          Delete
+        </a>
       </div>
     </div>
   );
@@ -135,6 +155,13 @@ const Grader = () => {
     calculatePoints(updatedErrors);
   };
 
+  const deleteError = (e, index) => {
+    e.preventDefault();
+    console.log(index);
+    errors.splice(index, 1);
+    setErrors(errors);
+    calculatePoints(errors);
+  };
   return (
     <div id="container" style={{ maxWidth: 900 }}>
       {/* Header */}
@@ -224,13 +251,15 @@ const Grader = () => {
           {errors.length > 0 &&
             errors.map((error, index) => {
               if (error.type === "fileName") {
-                return <FileName name={error.text} />;
+                return <FileName key={index} name={error.text} />;
               }
               return (
                 <Error
                   key={index}
                   text={error.text}
                   pointsToTakeAway={error.pointsToTakeAway}
+                  index={index}
+                  deleteError={deleteError}
                 />
               );
             })}
