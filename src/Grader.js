@@ -20,7 +20,7 @@ const Error = (props) => {
   return (
     <div
       className="errorContainer"
-      style={{ display: "flex", flexDirection: "column" }}
+      style={{ display: "flex", flexDirection: "column", width: 340 }}
     >
       <div
         style={{ display: "flex", flexDirection: "row", alignItems: "center" }}
@@ -46,28 +46,66 @@ const Error = (props) => {
         style={{
           display: "flex",
           flexDirection: "row",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           marginTop: 10,
         }}
       >
-        <div style={{ marginRight: 10 }}>Edit</div>
-        <a
-          href="#"
-          onClick={(e) => deleteError(e, index)}
-          style={{ color: "red", textDecoration: "none" }}
-        >
-          Delete
-        </a>
+        <div style={{ display: "flex" }}>
+          <div
+            style={{
+              marginRight: 10,
+              height: 20,
+              width: 20,
+              borderRadius: 10,
+              display: "flex",
+              backgroundColor: "#d3d3d3",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: 12,
+              textAlign: "center",
+            }}
+          >
+            +
+          </div>
+          <div
+            style={{
+              marginRight: 10,
+              height: 20,
+              width: 20,
+              borderRadius: 10,
+              display: "flex",
+              backgroundColor: "#d3d3d3",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: 12,
+              textAlign: "center",
+            }}
+          >
+            -
+          </div>
+        </div>
+        <div style={{ display: "flex" }}>
+          <div style={{ marginRight: 10 }}>Add Comment</div>
+          <a
+            href="#"
+            onClick={(e) => deleteError(e, index)}
+            style={{ color: "red", textDecoration: "none" }}
+          >
+            Delete
+          </a>
+        </div>
       </div>
     </div>
   );
 };
 
 const Grader = () => {
-  const [issues, setIssues] = useState(testRawIssue);
+  const [issues, setIssues] = useState("");
   const [errors, setErrors] = useState([]);
   const [errorsCount, setErrorsCount] = useState(0);
-  const [currentAssignmentNumber, setCurrentAssignmentNumber] = useState(1);
+  const [currentAssignmentNumber, setCurrentAssignmentNumber] = useState(
+    localStorage.getItem("currentAssignmentNumber") || 1
+  );
   const [points, setPoints] = useState(50);
 
   useEffect(() => {
@@ -76,6 +114,10 @@ const Grader = () => {
       .then((data) => console.log("Serverless Function Data", data))
       .catch((e) => console.log(e.message));
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("currentAssignmentNumber", currentAssignmentNumber);
+  });
 
   const updateText = (event) => {
     let text = event.target.value;
@@ -219,21 +261,25 @@ const Grader = () => {
 
       {/* Week Selector  */}
       <div style={{ marginTop: 10, marginBottom: 10 }}>
-        <select
-          value={currentAssignmentNumber}
-          onChange={handleAssignmentWeekChange}
-        >
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-        </select>
+        <label>
+          Selfie Site:
+          <select
+            style={{ marginRight: 10, marginLeft: 10 }}
+            value={currentAssignmentNumber}
+            onChange={handleAssignmentWeekChange}
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+        </label>
       </div>
 
       <div style={{ display: "flex", flexDirection: "row" }}>
@@ -242,12 +288,13 @@ const Grader = () => {
           <textarea
             value={issues}
             onChange={updateText}
-            cols="65"
-            rows="20"
+            cols="60"
+            rows="18"
           ></textarea>
         </div>
 
-        <div>
+        {/* Errors Container */}
+        <div style={{ height: 300, overflowY: "auto" }}>
           {errors.length > 0 &&
             errors.map((error, index) => {
               if (error.type === "fileName") {
