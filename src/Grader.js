@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
+import Modal from "react-modal";
+
 import "./Grader.css";
 
-const testRawIssue = `index.html
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+  },
+};
 
-<footer> should have a properly structured email (mailto) link [SS2]
-the footer links (EXCEPT for the mailto one) should have attribute of target="_blank" [SS2]
-<footer> should NOT have any <p> elements...it is not a paragraph [SS2]
- education.html
-
-<footer> should have a properly structured email (mailto) link [SS2]
-the footer links (EXCEPT for the mailto one) should have attribute of target="_blank" [SS2]
-<footer> should NOT have any <p> elements...it is not a paragraph [SS2]
-the school links should have attribute of target="_blank" [SS2]
-all school links should go around the h3 (i.e., <a href...><h3>...</h3></a>) [SS2]`;
+// Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
+// Modal.setAppElement("#yourAppElement");
 
 const FileName = (props) => <h2 style={{ marginTop: 0 }}>{props.name}</h2>;
 const Error = (props) => {
-  const { text, pointsToTakeAway, index, deleteError } = props;
+  const { text, pointsToTakeAway, index, deleteError, openModal } = props;
   return (
     <div
       className="errorContainer"
@@ -26,7 +30,9 @@ const Error = (props) => {
         style={{ display: "flex", flexDirection: "row", alignItems: "center" }}
       >
         <div style={{ display: "flex", flex: 21, flexDirection: "column" }}>
-          <div style={{ fontSize: 14 }}>{text}</div>
+          <div style={{ fontSize: 14 }}>
+            <strong>{text}</strong>
+          </div>
         </div>
         <div
           style={{
@@ -85,7 +91,9 @@ const Error = (props) => {
           </div>
         </div>
         <div style={{ display: "flex" }}>
-          <div style={{ marginRight: 10 }}>Add Comment</div>
+          <button onClick={() => openModal(index)} style={{ marginRight: 10 }}>
+            Add Comment
+          </button>
           <a
             href="#"
             onClick={(e) => deleteError(e, index)}
@@ -101,12 +109,33 @@ const Error = (props) => {
 
 const Grader = () => {
   const [issues, setIssues] = useState("");
+  const [comment, setComment] = useState("");
   const [errors, setErrors] = useState([]);
+  const [error, setError] = useState({ text: "", comments: [] });
+  const [errorComment, setErrorComment] = useState("");
   const [errorsCount, setErrorsCount] = useState(0);
   const [currentAssignmentNumber, setCurrentAssignmentNumber] = useState(
     localStorage.getItem("currentAssignmentNumber") || 1
   );
   const [points, setPoints] = useState(50);
+  var subtitle;
+  const [modalIsOpen, setIsOpen] = React.useState(false);
+
+  function openModal(index) {
+    let error = errors[index];
+    setError(error);
+    console.log(error);
+    setIsOpen(true);
+  }
+
+  function afterOpenModal() {
+    // references are now sync'd and can be accessed.
+    subtitle.style.color = "#f00";
+  }
+
+  function closeModal() {
+    setIsOpen(false);
+  }
 
   useEffect(() => {
     fetch("http://localhost:7071/api/products")
@@ -118,6 +147,23 @@ const Grader = () => {
   useEffect(() => {
     localStorage.setItem("currentAssignmentNumber", currentAssignmentNumber);
   });
+
+  const updateComment = (event) => {
+    const comment = event.target.value;
+    setComment(comment);
+  };
+
+  const updateErrorComment = (event) => {
+    const comment = event.target.value;
+    setErrorComment(comment);
+  };
+
+  const addErrorComment = () => {
+    error.comments.push(errorComment);
+    setErrorComment("");
+
+    // updateErrorComment("");
+  };
 
   const updateText = (event) => {
     let text = event.target.value;
@@ -147,6 +193,8 @@ const Grader = () => {
         type: error.includes(".html") ? "fileName" : "error",
         assignmentNumber: assignmentNumber,
         pointsToTakeAway,
+        comments: [],
+        possibleComments: [],
       };
     });
 
@@ -206,6 +254,8 @@ const Grader = () => {
   };
   return (
     <div id="container" style={{ maxWidth: 900 }}>
+      <button onClick={openModal}>Open Modal</button>
+
       {/* Header */}
       <div
         style={{
@@ -258,7 +308,6 @@ const Grader = () => {
           </span>
         </div>
       </div>
-
       {/* Week Selector  */}
       <div style={{ marginTop: 10, marginBottom: 10 }}>
         <label>
@@ -281,7 +330,6 @@ const Grader = () => {
           </select>
         </label>
       </div>
-
       <div style={{ display: "flex", flexDirection: "row" }}>
         {/* Raw Issues */}
         <div style={{ marginRight: 20 }} className="rawIssues">
@@ -307,11 +355,63 @@ const Grader = () => {
                   pointsToTakeAway={error.pointsToTakeAway}
                   index={index}
                   deleteError={deleteError}
+                  openModal={openModal}
                 />
               );
             })}
         </div>
       </div>
+      {/* Notes for Student */}
+      <h2>Notes</h2>
+      <div>
+        {errors.length > 0 &&
+          errors.map((error) =>
+            error.type === "fileName" ? (
+              <p>
+                <strong>{error.text}</strong>
+              </p>
+            ) : (
+              <p>{error.text}</p>
+            )
+          )}
+        {comment !== "" && (
+          <div>
+            <strong>Additional Comments: </strong>
+            {comment}
+          </div>
+        )}
+      </div>
+
+      {/* Additional Comments */}
+      <h2>Additional Comments</h2>
+      <textarea
+        value={comment}
+        onChange={updateComment}
+        cols="60"
+        rows="10"
+      ></textarea>
+      <Modal
+        isOpen={modalIsOpen}
+        onAfterOpen={afterOpenModal}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel="Edit Error"
+      >
+        <h2 ref={(_subtitle) => (subtitle = _subtitle)}>{error.text}</h2>
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          <label>
+            Comment:{" "}
+            <input
+              type="text"
+              value={errorComment}
+              onChange={updateErrorComment}
+            />
+          </label>
+          <button onClick={addErrorComment}>Add</button>
+        </div>
+        {error.text && error.comments.map((comment) => <div>{comment}</div>)}
+        <button onClick={closeModal}>close</button>
+      </Modal>
     </div>
   );
 };
