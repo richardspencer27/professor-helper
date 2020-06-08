@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import ReactDOM from "react-dom";
 import Modal from "react-modal";
 
 import "./Grader.css";
@@ -94,13 +93,17 @@ const Error = (props) => {
           <button onClick={() => openModal(index)} style={{ marginRight: 10 }}>
             Add Comment
           </button>
-          <a
-            href="#"
+          <button
             onClick={(e) => deleteError(e, index)}
-            style={{ color: "red", textDecoration: "none" }}
+            style={{
+              marginRight: 10,
+              backgroundColor: "red",
+              color: "white",
+              borderColor: "red",
+            }}
           >
             Delete
-          </a>
+          </button>
         </div>
       </div>
     </div>
