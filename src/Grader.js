@@ -371,7 +371,10 @@ const Grader = () => {
                 <strong>{error.text}</strong>
               </p>
             ) : (
-              <p>{error.text}</p>
+              <p>
+                {error.text}
+                {error.comments.length > 0 && ` :${error.comments[0]}`}
+              </p>
             )
           )}
         {comment !== "" && (
@@ -390,6 +393,8 @@ const Grader = () => {
         cols="60"
         rows="10"
       ></textarea>
+
+      {/* Edit Comments Modal */}
       <Modal
         isOpen={modalIsOpen}
         onAfterOpen={afterOpenModal}
